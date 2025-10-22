@@ -98,6 +98,17 @@ st.markdown("""
         transition: all 0.3s ease;
         font-weight: 600;
     }
+    .stButton>button:hover {
+        background-color: #388E3C;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .language-box {
+        padding: 1rem;
+        border-radius: 10px;
+        margin: 0.5rem 0;
+        border: 1px solid #A5D6A7;
+    }
 </style>
 """, unsafe_allow_html=True)
 
