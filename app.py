@@ -33,16 +33,8 @@ st.markdown("""
         margin-bottom: 1rem;
         font-weight: 600;
     }
-    .section-header {
-        font-size: 1.2rem;
-        color: #43A047;
-        margin: 1.5rem 0 0.5rem 0;
-        font-weight: 600;
-        border-left: 4px solid #4CAF50;
-        padding-left: 10px;
-    }
     .sidebar .sidebar-content {
-        background-color: #E8F5E9;
+        background-color: #F9F9F9;
     }
     .stRadio > div {
         flex-direction: row;
@@ -50,41 +42,15 @@ st.markdown("""
     }
     .stRadio > label {
         font-weight: 500;
-        color: #2E7D32;
+        color: #333;
     }
-    .result-box {
-        background-color: #E8F5E9;
-        border-radius: 12px;
-        padding: 1.5rem;
-        border-left: 5px solid #4CAF50;
-        margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .camera-container, .upload-container {
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-        border: 2px solid #4CAF50;
+    .result-box, .language-box, .camera-container, .upload-container {
+        background-color: #F5F5F5;
+        border-radius: 10px;
         padding: 1rem;
-        margin: 1rem 0;
-    }
-    .divider {
-        border-top: 2px solid #C8E6C9;
-        margin: 1.5rem 0;
-    }
-    .success-box {
-        background-color: #C8E6C9;
-        color: #2E7D32;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-    .warning-box {
-        background-color: #FFF9C4;
-        color: #F57F17;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
+        margin: 0.5rem 0;
+        border: none;
+        box-shadow: none;
     }
     .stButton>button {
         background-color: #4CAF50;
@@ -92,22 +58,24 @@ st.markdown("""
         border: none;
         padding: 0.5rem 2rem;
         font-size: 16px;
-        margin: 4px 2px;
         cursor: pointer;
         border-radius: 25px;
-        transition: all 0.3s ease;
         font-weight: 600;
     }
     .stButton>button:hover {
         background-color: #388E3C;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
-    .language-box {
+    .divider {
+        border-top: 1px solid #DDD;
+        margin: 1rem 0;
+    }
+    .success-box, .warning-box {
+        background-color: #EEE;
+        color: #333;
         padding: 1rem;
-        border-radius: 10px;
+        border-radius: 8px;
         margin: 0.5rem 0;
-        border: 1px solid #A5D6A7;
     }
 </style>
 """, unsafe_allow_html=True)
