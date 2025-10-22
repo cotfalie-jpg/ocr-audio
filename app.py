@@ -27,12 +27,6 @@ st.markdown("""
         margin-bottom: 1rem;
         font-weight: 700;
     }
-    .sub-header {
-        font-size: 1.4rem;
-        color: #388E3C;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
     .section-header {
         font-size: 1.2rem;
         color: #43A047;
