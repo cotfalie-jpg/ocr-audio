@@ -46,14 +46,6 @@ st.markdown("""
         font-weight: 500;
         color: #2E7D32;
     }
-    .result-box {
-        background-color: #E8F5E9;
-        border-radius: 12px;
-        padding: 1.5rem;
-        border-left: 5px solid #4CAF50;
-        margin: 1rem 0;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
     .divider {
         border-top: 2px solid #C8E6C9;
         margin: 1.5rem 0;
@@ -175,7 +167,6 @@ with col2:
 if text.strip():
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<h2 class="sub-header">Texto Detectado</h2>', unsafe_allow_html=True)
-    st.markdown('<div class="result-box">', unsafe_allow_html=True)
     st.text_area("Texto extraído:", text, height=150, key="texto_detectado")
     st.markdown('</div>', unsafe_allow_html=True)
 else:
