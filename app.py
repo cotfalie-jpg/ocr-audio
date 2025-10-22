@@ -154,7 +154,7 @@ with col2:
     
     # Procesamiento de imagen cargada
     if 'bg_image' in locals() and bg_image is not None:
-        st.image(bg_image, caption='Imagen cargada', use_column_width=True)
+        st.image(bg_image, caption='Imagen cargada', use_container_width=True)
         with open(bg_image.name, 'wb') as f:
             f.write(bg_image.read())
         
