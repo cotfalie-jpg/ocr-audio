@@ -260,7 +260,6 @@ st.markdown(
     """
     <div style='text-align: center; color: #666; padding: 1rem; background-color: #F1F8E9; border-radius: 10px;'>
         <strong>OCR Translator Pro</strong> | Extrae texto de imágenes y conviértelo a audio en diferentes idiomas<br>
-        Tecnologías: Streamlit • OpenCV • Tesseract OCR • gTTS
     </div>
     """, 
     unsafe_allow_html=True
