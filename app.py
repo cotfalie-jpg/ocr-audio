@@ -139,7 +139,7 @@ with col1:
         st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<h2 class="sub-header">Configuración</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Visualización</h2>', unsafe_allow_html=True)
     
     # Procesamiento de imagen de cámara
     if img_file_buffer is not None:
