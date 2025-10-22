@@ -52,6 +52,14 @@ st.markdown("""
         font-weight: 500;
         color: #2E7D32;
     }
+    .result-box {
+        background-color: #E8F5E9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border-left: 5px solid #4CAF50;
+        margin: 1rem 0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
     .camera-container, .upload-container {
         border-radius: 15px;
         overflow: hidden;
