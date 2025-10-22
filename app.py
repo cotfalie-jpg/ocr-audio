@@ -17,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Aplicar estilos CSS personalizados
+# Aplicar estilos CSS personalizados (limpiando banners innecesarios y emojis)
 st.markdown("""
 <style>
     .main-header {
@@ -26,9 +26,6 @@ st.markdown("""
         text-align: center;
         margin-bottom: 1rem;
         font-weight: 700;
-        background: linear-gradient(135deg, #2E7D32, #4CAF50);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
     }
     .sub-header {
         font-size: 1.4rem;
@@ -63,18 +60,12 @@ st.markdown("""
         margin: 1rem 0;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    .camera-container {
+    .camera-container, .upload-container {
         border-radius: 15px;
         overflow: hidden;
         box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         border: 2px solid #4CAF50;
-    }
-    .upload-container {
-        border: 2px dashed #4CAF50;
-        border-radius: 12px;
-        padding: 2rem;
-        text-align: center;
-        background-color: #F1F8E9;
+        padding: 1rem;
         margin: 1rem 0;
     }
     .divider {
@@ -100,9 +91,6 @@ st.markdown("""
         color: white;
         border: none;
         padding: 0.5rem 2rem;
-        text-align: center;
-        text-decoration: none;
-        display: inline-block;
         font-size: 16px;
         margin: 4px 2px;
         cursor: pointer;
@@ -116,7 +104,6 @@ st.markdown("""
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
     .language-box {
-        background: linear-gradient(135deg, #E8F5E9, #C8E6C9);
         padding: 1rem;
         border-radius: 10px;
         margin: 0.5rem 0;
@@ -149,44 +136,43 @@ def remove_files(n):
         for f in mp3_files:
             if os.stat(f).st_mtime < now - n_days:
                 os.remove(f)
-                print("Deleted ", f)
 
 # Inicialización
 remove_files(7)
 translator = Translator()
 
 # Header principal
-st.markdown('<h1 class="main-header">🔍 OCR Translator Pro</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">OCR Translator Pro</h1>', unsafe_allow_html=True)
 st.markdown('<p style="text-align: center; color: #666; font-size: 1.1rem; margin-bottom: 2rem;">Extrae texto de imágenes y conviértelo a audio en múltiples idiomas</p>', unsafe_allow_html=True)
 
 # Layout principal
 col1, col2 = st.columns([2, 1])
 
 with col1:
-    st.markdown('<h2 class="sub-header">📷 Fuente de Imagen</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Fuente de Imagen</h2>', unsafe_allow_html=True)
     
     # Selección de fuente
     cam_ = st.radio(
         "Selecciona la fuente de la imagen:",
-        ["📁 Cargar archivo", "📷 Usar cámara"],
+        ["Cargar archivo", "Usar cámara"],
         horizontal=True
     )
     
-    if cam_ == "📷 Usar cámara":
+    if cam_ == "Usar cámara":
         st.markdown('<div class="camera-container">', unsafe_allow_html=True)
         img_file_buffer = st.camera_input("Toma una foto del texto")
         st.markdown('</div>', unsafe_allow_html=True)
         
-        with st.expander("⚙️ Configuración de cámara"):
+        with st.expander("Configuración de cámara"):
             filtro = st.radio("Aplicar filtro de inversión:", ['Sí', 'No'], horizontal=True)
     else:
         img_file_buffer = None
         st.markdown('<div class="upload-container">', unsafe_allow_html=True)
-        bg_image = st.file_uploader("📤 Arrastra o selecciona una imagen", type=["png", "jpg", "jpeg"])
+        bg_image = st.file_uploader("Arrastra o selecciona una imagen", type=["png", "jpg", "jpeg"])
         st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<h2 class="sub-header">🎯 Configuración</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Configuración</h2>', unsafe_allow_html=True)
     
     # Procesamiento de imagen de cámara
     if img_file_buffer is not None:
@@ -208,21 +194,21 @@ with col2:
         img_cv = cv2.imread(bg_image.name)
         img_rgb = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
         text = pytesseract.image_to_string(img_rgb)
-        st.markdown(f'<div class="success-box">✅ Imagen procesada: {bg_image.name}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="success-box">Imagen procesada: {bg_image.name}</div>', unsafe_allow_html=True)
 
 # Mostrar texto detectado
 if text.strip():
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-    st.markdown('<h2 class="sub-header">📄 Texto Detectado</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Texto Detectado</h2>', unsafe_allow_html=True)
     st.markdown('<div class="result-box">', unsafe_allow_html=True)
     st.text_area("Texto extraído:", text, height=150, key="texto_detectado")
     st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.markdown('<div class="warning-box">⚠️ No se ha detectado texto aún. Toma una foto o carga una imagen con texto.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="warning-box">No se ha detectado texto aún. Toma una foto o carga una imagen con texto.</div>', unsafe_allow_html=True)
 
 # Sidebar para traducción y audio
 with st.sidebar:
-    st.markdown('<h2 class="sub-header">🌍 Configuración de Traducción</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="sub-header">Configuración de Traducción</h2>', unsafe_allow_html=True)
     
     try:
         os.mkdir("temp")
@@ -282,20 +268,20 @@ with st.sidebar:
     # Botón de conversión
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     
-    if st.button("🎵 Convertir a Audio", use_container_width=True):
+    if st.button("Convertir a Audio", use_container_width=True):
         if text.strip():
-            with st.spinner('🔄 Traduciendo y generando audio...'):
+            with st.spinner('Traduciendo y generando audio...'):
                 result, output_text = text_to_speech(input_language, output_language, text, tld)
                 
                 if result != "no_text":
                     audio_file = open(f"temp/{result}.mp3", "rb")
                     audio_bytes = audio_file.read()
                     
-                    st.markdown("## 🎧 Audio Generado")
+                    st.markdown("## Audio Generado")
                     st.audio(audio_bytes, format="audio/mp3", start_time=0)
                     
                     if display_output_text:
-                        st.markdown("## 📝 Texto Traducido")
+                        st.markdown("## Texto Traducido")
                         st.markdown(f'<div class="result-box">{output_text}</div>', unsafe_allow_html=True)
                 else:
                     st.error("No hay texto para convertir")
