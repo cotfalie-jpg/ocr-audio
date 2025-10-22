@@ -167,7 +167,7 @@ with col2:
 if text.strip():
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     st.markdown('<h2 class="sub-header">Texto Detectado</h2>', unsafe_allow_html=True)
-    st.text_area("Texto extraído:", text, height=200, key="texto_detectado")
+    st.text_area("Texto extraído:", text, height=300, key="texto_detectado")
     st.markdown('</div>', unsafe_allow_html=True)
 else:
     st.markdown('<div class="warning-box">No se ha detectado texto aún. Toma una foto o carga una imagen con texto.</div>', unsafe_allow_html=True)
