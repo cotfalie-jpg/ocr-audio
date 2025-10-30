@@ -1,11 +1,20 @@
-#streamlit==0.80.0
+# --- Librerías principales ---
 streamlit
-gTTS==2.2.2
-googletrans==3.1.0a0
-streamlit-webrtc
-numpy
 opencv-python-headless
+numpy
+pillow
+gTTS
+deep-translator
 pytesseract
-Pillow
 
+# --- Soporte de visualización y dibujo ---
+streamlit-drawable-canvas
 
+# --- Limpieza y manejo de archivos ---
+glob2
+
+# --- Extra: si usas imágenes PNG o similares ---
+imageio
+
+# --- Compatibilidad con versiones modernas ---
+protobuf==4.25.3
