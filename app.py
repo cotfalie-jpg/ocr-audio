@@ -1,4 +1,3 @@
-import streamlit as st
 import os
 import time
 import glob
@@ -7,196 +6,188 @@ import numpy as np
 import pytesseract
 from PIL import Image
 from gtts import gTTS
-from googletrans import Translator
+from deep_translator import GoogleTranslator
+import streamlit as st
 
-# =========================
-# CONFIGURACIÓN GENERAL
-# =========================
+# ==============================
+# CONFIGURACIÓN DE PÁGINA
+# ==============================
 st.set_page_config(
-    page_title="BAE Aprendizaje Visual",
+    page_title="Baby Story Reader BAE",
     page_icon="🧸",
-    layout="wide"
+    layout="centered",
 )
 
-# =========================
-# ESTILO BAE
-# =========================
+# ==============================
+# ESTILO BAE — Rosa Suave & Moderno
+# ==============================
 st.markdown("""
 <style>
-[data-testid="stAppViewContainer"] {
-    background-color: #FFF8EA;
-    color: #3C3C3C;
-    font-family: 'Poppins', sans-serif;
-}
-.main-title {
-    font-size: 2.8rem;
-    color: #DD8E6B;
-    text-align: center;
-    font-weight: 700;
-    margin-bottom: 0.3rem;
-}
-.subtitle {
-    font-size: 1.2rem;
-    color: #4D797A;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-.section-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: #DD8E6B;
-    border-left: 5px solid #F0D192;
-    padding-left: 10px;
-    margin-top: 1.5rem;
-}
-.info-box {
-    background: #FFF;
-    border-radius: 16px;
-    border: 1px solid #F0D192;
-    padding: 1rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-top: 1rem;
-}
-.success-box {
-    background: #FFF9E6;
-    border-radius: 12px;
-    padding: 1rem;
-    color: #4D797A;
-    border-left: 6px solid #DD8E6B;
-    margin: 1rem 0;
-}
-.stButton>button {
-    background: linear-gradient(135deg, #F9E79F, #F5CBA7);
-    border: none;
-    color: #3C3C3C;
-    font-weight: 600;
-    border-radius: 12px;
-    padding: 0.8rem 2rem;
-    width: 100%;
-    box-shadow: 0 6px 15px rgba(221,142,107,0.25);
-    transition: all 0.3s ease;
-}
-.stButton>button:hover {
-    background: linear-gradient(135deg, #F5CBA7, #FAD7A0);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(221,142,107,0.35);
-}
+    .main-title {
+        font-size: 2.8rem;
+        text-align: center;
+        background: linear-gradient(135deg, #F48FB1, #F06292);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    .subtitle {
+        text-align: center;
+        color: #9C27B0;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        font-weight: 500;
+    }
+    .stButton>button {
+        background: linear-gradient(135deg, #F48FB1, #EC407A);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.8rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #F06292, #E91E63);
+    }
+    .text-box {
+        background-color: #FFF0F5;
+        border: 2px solid #F8BBD0;
+        border-radius: 12px;
+        padding: 1rem;
+        color: #6A1B9A;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    .audio-box {
+        background: #FCE4EC;
+        border: 2px solid #F48FB1;
+        border-radius: 16px;
+        padding: 1rem;
+        text-align: center;
+        color: #AD1457;
+        margin-top: 1rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# =========================
-# FUNCIONES
-# =========================
-def text_to_speech(input_language, output_language, text, tld):
-    if not text.strip():
-        return "no_text", "No hay texto para convertir"
-
-    translation = translator.translate(text, src=input_language, dest=output_language)
-    trans_text = translation.text
-    tts = gTTS(trans_text, lang=output_language, tld=tld, slow=False)
-    my_file_name = text[:20].replace(" ", "_") or "audio"
-    tts.save(f"temp/{my_file_name}.mp3")
-    return my_file_name, trans_text
-
+# ==============================
+# FUNCIÓN AUXILIAR
+# ==============================
 def remove_files(n):
     mp3_files = glob.glob("temp/*mp3")
-    now = time.time()
-    n_days = n * 86400
-    for f in mp3_files:
-        if os.stat(f).st_mtime < now - n_days:
-            os.remove(f)
+    if len(mp3_files) != 0:
+        now = time.time()
+        n_days = n * 86400
+        for f in mp3_files:
+            if os.stat(f).st_mtime < now - n_days:
+                os.remove(f)
 
 try:
     os.mkdir("temp")
 except:
     pass
 
-translator = Translator()
 remove_files(7)
 
-# =========================
-# ENCABEZADO
-# =========================
-st.markdown('<div class="main-title">🧸 BAE Aprendizaje Visual</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Convierte objetos y textos en cuentos hablados para bebés 💛</div>', unsafe_allow_html=True)
+# ==============================
+# CABECERA
+# ==============================
+st.markdown('<div class="main-title">🧸 Baby Story Reader</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Convierte textos en dulces cuentos narrados para tu bebé 💕</div>', unsafe_allow_html=True)
 
-# =========================
-# INTERFAZ
-# =========================
-col1, col2 = st.columns([2, 1])
+# ==============================
+# FUENTE DE IMAGEN
+# ==============================
+st.markdown("### 📸 Captura o carga una imagen con texto")
+source = st.radio("Selecciona una fuente:", ["Usar cámara", "Cargar imagen"], horizontal=True)
 
-with col1:
-    st.markdown('<div class="section-title">📸 Fuente de Imagen</div>', unsafe_allow_html=True)
-    fuente = st.radio("Selecciona cómo obtener la imagen:", ["Usar cámara", "Cargar archivo"], horizontal=True)
-
-    text = ""
-
-    if fuente == "Usar cámara":
-        st.markdown('<div class="info-box">Toma una foto de un libro, juguete o palabra para que BAE la lea en voz alta.</div>', unsafe_allow_html=True)
-        img_file_buffer = st.camera_input("Captura una imagen")
-        filtro = st.radio("¿Aplicar filtro para texto claro?", ['Sí', 'No'], horizontal=True)
-
-        if img_file_buffer:
-            bytes_data = img_file_buffer.getvalue()
-            cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-            if filtro == 'Sí':
-                cv2_img = cv2.bitwise_not(cv2_img)
-            img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-            text = pytesseract.image_to_string(img_rgb)
-    else:
-        bg_image = st.file_uploader("Selecciona una imagen", type=["png", "jpg", "jpeg"])
-        if bg_image:
-            st.image(bg_image, caption="Imagen cargada", use_container_width=True)
-            img_cv = cv2.imdecode(np.frombuffer(bg_image.read(), np.uint8), cv2.IMREAD_COLOR)
-            img_rgb = cv2.cvtColor(img_cv, cv2.COLOR_BGR2RGB)
-            text = pytesseract.image_to_string(img_rgb)
-
-with col2:
-    st.markdown('<div class="section-title">🎧 Voz y Traducción</div>', unsafe_allow_html=True)
-    
-    in_lang = st.selectbox("Idioma del texto detectado", ("Español", "Inglés", "Francés", "Japonés"))
-    out_lang = st.selectbox("Idioma para lectura", ("Español", "Inglés", "Francés", "Japonés"))
-    
-    language_map = {"Español": "es", "Inglés": "en", "Francés": "fr", "Japonés": "ja"}
-    input_language = language_map[in_lang]
-    output_language = language_map[out_lang]
-    
-    st.markdown('<div class="section-title">🗣️ Acento</div>', unsafe_allow_html=True)
-    accent = st.selectbox("Acento para inglés", ("Default", "India", "Reino Unido", "Estados Unidos", "Australia"))
-    accent_map = {"Default": "com", "India": "co.in", "Reino Unido": "co.uk", "Estados Unidos": "com", "Australia": "com.au"}
-    tld = accent_map[accent]
-
-# =========================
-# RESULTADOS
-# =========================
-if text.strip():
-    st.markdown('<div class="section-title">📖 Texto Detectado</div>', unsafe_allow_html=True)
-    st.text_area("Texto extraído:", text, height=200)
-
-    if st.button("✨ Leer en voz alta"):
-        with st.spinner("Generando lectura..."):
-            result, output_text = text_to_speech(input_language, output_language, text, tld)
-            if result != "no_text":
-                audio_file = open(f"temp/{result}.mp3", "rb")
-                audio_bytes = audio_file.read()
-                st.markdown('<div class="success-box">¡Texto leído con voz suave! 💛</div>', unsafe_allow_html=True)
-                st.audio(audio_bytes, format="audio/mp3")
-                st.markdown('<div class="section-title">🧠 Texto traducido</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="info-box">{output_text}</div>', unsafe_allow_html=True)
-            else:
-                st.warning("No se detectó texto para convertir")
+img_data = None
+if source == "Usar cámara":
+    img_file = st.camera_input("Toma una foto del texto")
+    if img_file:
+        img_data = np.frombuffer(img_file.getvalue(), np.uint8)
 else:
-    st.info("📷 Toma una foto o carga una imagen para empezar")
+    img_file = st.file_uploader("Carga una imagen (png, jpg, jpeg)", type=["png", "jpg", "jpeg"])
+    if img_file:
+        img_data = np.frombuffer(img_file.read(), np.uint8)
 
-# =========================
-# PIE DE PÁGINA
-# =========================
-st.markdown("---")
-st.markdown(
-    """
-    <div style='text-align: center; color: #4D797A; padding: 1rem;'>
-        🌼 <strong>BAE Aprendizaje Visual</strong> — IA que estimula el lenguaje y la curiosidad en los primeros años 💛
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# ==============================
+# DETECCIÓN DE TEXTO
+# ==============================
+text = ""
+if img_data is not None:
+    img = cv2.imdecode(img_data, cv2.IMREAD_COLOR)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    text = pytesseract.image_to_string(gray)
+    if text.strip():
+        st.markdown("### 📝 Texto Detectado")
+        st.markdown(f'<div class="text-box">{text}</div>', unsafe_allow_html=True)
+    else:
+        st.warning("No se detectó texto, intenta con otra imagen.")
+
+# ==============================
+# OPCIONES DE VOZ Y TRADUCCIÓN
+# ==============================
+if text.strip():
+    st.markdown("### 🌍 Selecciona idioma y estilo de voz")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        out_lang = st.selectbox(
+            "Idioma para el cuento:",
+            ("Español", "Inglés", "Francés", "Portugués", "Italiano"),
+        )
+
+    with col2:
+        estilo = st.selectbox(
+            "Estilo del cuento:",
+            ("Tierno y calmado 🧸", "Aventurero 🚀", "Para dormir 🌙"),
+        )
+
+    # Diccionario de idiomas
+    lang_map = {
+        "Español": "es",
+        "Inglés": "en",
+        "Francés": "fr",
+        "Portugués": "pt",
+        "Italiano": "it"
+    }
+    lg = lang_map[out_lang]
+
+    # Botón principal
+    if st.button("🎧 Convertir en Cuento"):
+        with st.spinner("Generando el cuento y la voz mágica... ✨"):
+            # Traducción del texto
+            try:
+                story_text = GoogleTranslator(source="auto", target=lg).translate(text)
+            except Exception as e:
+                st.error(f"Error al traducir: {e}")
+                story_text = text
+
+            # Personalizar estilo
+            if estilo == "Tierno y calmado 🧸":
+                story_text = f"💤 Había una vez un pequeño osito que aprendía palabras nuevas. {story_text} 🌼"
+            elif estilo == "Aventurero 🚀":
+                story_text = f"🚀 En un bosque lleno de estrellas, comenzó una gran aventura: {story_text}"
+            else:
+                story_text = f"🌙 En un mundo de sueños suaves, este cuento te arrullará: {story_text}"
+
+            # Generar voz
+            tts = gTTS(story_text, lang=lg)
+            filename = "temp/baby_story.mp3"
+            tts.save(filename)
+
+            # Mostrar resultado
+            st.markdown("### 🎵 Audio del Cuento")
+            audio_file = open(filename, "rb")
+            audio_bytes = audio_file.read()
+            st.audio(audio_bytes, format="audio/mp3")
+            st.markdown(f'<div class="audio-box">{story_text}</div>', unsafe_allow_html=True)
+else:
+    st.info("💡 Captura o sube una imagen con texto para crear un cuento de bebé.")
+
