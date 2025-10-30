@@ -1,204 +1,165 @@
-import os
-import time
-import glob
-import cv2
-import numpy as np
-import pytesseract
-from PIL import Image
-from gtts import gTTS
-from deep_translator import GoogleTranslator
 import streamlit as st
+from openai import OpenAI
 
-# -------------------------------------------------------
-# CONFIGURACIÓN GENERAL
-# -------------------------------------------------------
+# ==============================
+# CONFIGURACIÓN DE PÁGINA
+# ==============================
 st.set_page_config(
-    page_title="BAE | Cuento Dulce para Bebés",
-    page_icon="🧸",
+    page_title="Cuentos BAE",
+    page_icon="🍼",
     layout="centered"
 )
 
-# -------------------------------------------------------
-# 🌼 ESTILO VISUAL BAE PASTEL
-# -------------------------------------------------------
+# ==============================
+# ESTILO VISUAL BAE (pastel)
+# ==============================
 st.markdown("""
 <style>
-    .stApp {
-        background: linear-gradient(180deg, #FFF7C2 0%, #FFD6A5 40%, #BDE0FE 100%);
+    body, .stApp {
+        background-color: #FFF8EA;
+        color: #403D39;
         font-family: 'Poppins', sans-serif;
-        color: #4B4B4B;
     }
 
-    h1, h2, h3 {
-        color: #7FB77E;
-        font-weight: 700;
-    }
-
-    /* Título principal */
     .main-title {
         font-size: 2.8rem;
         text-align: center;
-        background: linear-gradient(90deg, #7FB77E, #FFD6A5);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 0.2rem;
+        font-weight: 800;
+        color: #403D39;
+        margin-bottom: 0.5rem;
     }
 
     .subtitle {
         text-align: center;
-        color: #4B4B4B;
         font-size: 1.1rem;
+        color: #7E746C;
         margin-bottom: 2rem;
     }
 
     /* Caja principal */
-    .upload-box {
-        background-color: #fffef7dd;
-        border: 3px dashed #FFD6A5;
-        border-radius: 25px;
+    .main-box {
+        background-color: #FFFDF5;
+        border-radius: 20px;
+        border: 2px solid #DD8E6B;
         padding: 2rem;
-        text-align: center;
-        box-shadow: 0 6px 20px rgba(255, 214, 165, 0.3);
+        box-shadow: 0 8px 25px rgba(221,142,107,0.1);
     }
 
-    .result-box {
-        background-color: #fffef8;
-        border: 2px solid #BDE0FE;
-        border-radius: 25px;
-        padding: 1.8rem;
-        margin-top: 2rem;
-        box-shadow: 0 8px 20px rgba(189, 224, 254, 0.2);
-    }
-
-    /* Botones */
-    .stButton>button {
-        background: linear-gradient(135deg, #FFD6A5, #7FB77E);
+    /* Botones estilo pastel */
+    .stButton > button {
+        background-color: #DD8E6B;
         color: white;
         border: none;
-        border-radius: 18px;
-        padding: 0.9rem 1.5rem;
+        border-radius: 12px;
+        padding: 0.7rem 2rem;
         font-size: 1.1rem;
         font-weight: 600;
-        width: 100%;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(221,142,107,0.2);
+        width: 100%;
     }
 
-    .stButton>button:hover {
-        background: linear-gradient(135deg, #7FB77E, #FFD6A5);
-        transform: scale(1.02);
+    .stButton > button:hover {
+        background-color: #C67856;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(221,142,107,0.3);
     }
 
-    /* Caja de audio */
-    .audio-box {
-        background-color: #FFF7C2;
-        border-radius: 20px;
-        padding: 1rem;
-        text-align: center;
-        margin-top: 1rem;
-        border: 1px solid #FFD6A5;
+    /* Caja de resultado */
+    .story-box {
+        background-color: #FFF2C3;
+        border: 2px solid #DD8E6B;
+        border-radius: 16px;
+        padding: 1.5rem;
+        color: #403D39;
+        margin-top: 2rem;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.05);
     }
 
-    /* Texto informativo */
-    .info-text {
-        text-align: center;
-        color: #4B4B4B;
+    /* Input pastel */
+    .stTextInput > div > div > input, .stTextArea textarea {
+        background-color: #FFFDF5;
+        border: 2px solid #DD8E6B;
+        border-radius: 12px;
+        color: #403D39;
         font-size: 1rem;
-        margin-top: 1rem;
     }
 
-    textarea, input {
-        border-radius: 12px !important;
-        border: 1px solid #FFD6A580 !important;
-        background-color: #ffffff !important;
+    .stTextInput > div > div > input:focus, .stTextArea textarea:focus {
+        border-color: #C6E2E3;
+        box-shadow: 0 0 10px rgba(198,226,227,0.5);
     }
+
+    /* Divider */
+    .divider {
+        border-top: 2px solid #F3D5B5;
+        margin: 2rem 0;
+    }
+
+    /* Cabeceras pequeñas */
+    .section-title {
+        color: #DD8E6B;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
 </style>
 """, unsafe_allow_html=True)
 
-# -------------------------------------------------------
-# CABECERA
-# -------------------------------------------------------
-st.markdown('<div class="main-title">🧸 BAE - Cuento Dulce para Bebés</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Convierte una palabra o dibujo en un cuento narrado con ternura 💛</div>', unsafe_allow_html=True)
+# ==============================
+# ENCABEZADO
+# ==============================
+st.markdown('<div class="main-title">🍼 Cuentos para Bebés - BAE</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Historias dulces para calmar, dormir o sonreír junto a tu bebé</div>', unsafe_allow_html=True)
 
-# -------------------------------------------------------
-# SECCIÓN DE IMAGEN
-# -------------------------------------------------------
-col1, col2 = st.columns([2, 1])
-text = ""
+# ==============================
+# PANEL PRINCIPAL
+# ==============================
+with st.container():
+    st.markdown('<div class="main-box">', unsafe_allow_html=True)
 
-with col1:
-    st.markdown('<div class="upload-box">📸 <br><strong>Sube una imagen o toma una foto</strong></div>', unsafe_allow_html=True)
-    cam_option = st.radio("Fuente de imagen", ["Usar cámara", "Subir archivo"], horizontal=True)
+    st.markdown('<div class="section-title">✨ Crea tu cuento personalizado</div>', unsafe_allow_html=True)
 
-    if cam_option == "Usar cámara":
-        img_file_buffer = st.camera_input("Toma una foto (de una palabra o dibujo del bebé)")
-        filtro = st.radio("¿Aplicar filtro para mejorar lectura?", ["Sí", "No"], horizontal=True)
-    else:
-        img_file_buffer = None
-        uploaded_file = st.file_uploader("Sube una imagen (JPG, PNG)", type=["jpg", "jpeg", "png"])
-        filtro = "No"
+    nombre_bebe = st.text_input("👶 Nombre del bebé:")
+    tema = st.text_input("🌈 Tema del cuento (ej. animales, amistad, dormir, aventura):")
+    duracion = st.slider("⏳ Duración aproximada (minutos)", 1, 10, 3)
+    tono = st.selectbox("💛 Tono del cuento", ["Tierno", "Aventurero", "Educativo", "Para dormir"])
 
-# -------------------------------------------------------
-# PROCESAMIENTO OCR
-# -------------------------------------------------------
-with col2:
-    if cam_option == "Usar cámara" and img_file_buffer:
-        bytes_data = img_file_buffer.getvalue()
-        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-        if filtro == "Sí":
-            cv2_img = cv2.bitwise_not(cv2_img)
-        img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-        text = pytesseract.image_to_string(img_rgb)
+    api_key = st.text_input("🔑 Clave de OpenAI", type="password")
 
-    elif cam_option == "Subir archivo" and uploaded_file:
-        image = Image.open(uploaded_file)
-        st.image(image, caption="Imagen cargada", use_container_width=True)
-        cv2_img = np.array(image)
-        img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-        text = pytesseract.image_to_string(img_rgb)
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 
-# -------------------------------------------------------
-# GENERAR HISTORIA
-# -------------------------------------------------------
-if text.strip():
-    st.markdown('<div class="result-box">', unsafe_allow_html=True)
-    st.subheader("🌼 Palabra Detectada")
-    palabra = text.strip().split()[0]
-    st.write(f"**{palabra}**")
+    if st.button("🎧 Generar cuento"):
+        if not api_key:
+            st.warning("Por favor ingresa tu clave de OpenAI para continuar 🧸")
+        elif not nombre_bebe or not tema:
+            st.warning("Por favor escribe el nombre del bebé y el tema del cuento ✨")
+        else:
+            with st.spinner("🍼 Creando una historia mágica para tu bebé..."):
+                client = OpenAI(api_key=api_key)
+                prompt = f"""
+                Crea un cuento breve y tierno para un bebé llamado {nombre_bebe}.
+                Tema: {tema}.
+                Duración: {duracion} minutos aproximadamente.
+                Estilo: {tono}, con lenguaje suave, frases cortas y ritmo calmado.
+                El cuento debe transmitir cariño, seguridad y valores positivos.
+                Escribe en español.
+                """
 
-    traducida = GoogleTranslator(source='auto', target='es').translate(palabra)
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=800
+                )
 
-    # Historia bebé estilo BAE
-    historia = f"""
-    Había una vez un pequeño {traducida} que vivía en un mundo lleno de colores suaves.
-    Le encantaba despertar con el canto de los pajaritos y jugar entre las nubes de algodón.
-    Cuando el sol se dormía, se acurrucaba bajo una manta amarillita y soñaba con risas, abrazos y melodías dulces. 🌙💤
-    """
+                cuento = response.choices[0].message.content
+                st.markdown('<div class="story-box">', unsafe_allow_html=True)
+                st.markdown("### 🧸 Cuento Generado")
+                st.write(cuento)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-    st.subheader("🧚 Cuento para el Bebé")
-    st.write(historia)
-
-    # Generar audio
-    os.makedirs("temp", exist_ok=True)
-    tts = gTTS(historia, lang='es')
-    audio_path = "temp/cuento.mp3"
-    tts.save(audio_path)
-
-    st.markdown('<div class="audio-box">', unsafe_allow_html=True)
-    st.audio(audio_path, format="audio/mp3")
     st.markdown('</div>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-else:
-    st.info("💡 Sube o toma una imagen con una palabra para generar un cuento dulce 🌈")
 
-# -------------------------------------------------------
-# LIMPIAR ARCHIVOS ANTIGUOS
-# -------------------------------------------------------
-def remove_old(days=2):
-    now = time.time()
-    for f in glob.glob("temp/*.mp3"):
-        if os.stat(f).st_mtime < now - days * 86400:
-            os.remove(f)
-
-remove_old()
 
