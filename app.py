@@ -9,185 +9,175 @@ from gtts import gTTS
 from deep_translator import GoogleTranslator
 import streamlit as st
 
-# ==============================
-# CONFIGURACIÓN DE PÁGINA
-# ==============================
+# ============================
+# 🌸 CONFIGURACIÓN DE LA APP
+# ============================
 st.set_page_config(
-    page_title="Baby Story Reader BAE",
+    page_title="Lectura Mágica para Bebés",
     page_icon="🧸",
-    layout="centered",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# ==============================
-# ESTILO BAE — Rosa Suave & Moderno
-# ==============================
+# ============================
+# 🌈 ESTILO VISUAL “BAE”
+# ============================
 st.markdown("""
 <style>
-    .main-title {
-        font-size: 2.8rem;
+    .stApp {
+        background: linear-gradient(135deg, #FFF6FB 0%, #FDE2FF 40%, #F8E6FF 100%);
+        font-family: 'Poppins', sans-serif;
+        color: #5E3B76;
+    }
+
+    h1, h2, h3, h4 {
+        color: #B0578D;
         text-align: center;
-        background: linear-gradient(135deg, #F48FB1, #F06292);
+        font-weight: 700;
+    }
+
+    .main-header {
+        font-size: 3rem;
+        background: linear-gradient(90deg, #D988B9, #B0578D);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-weight: 800;
         margin-bottom: 0.5rem;
     }
-    .subtitle {
+
+    .sub {
         text-align: center;
-        color: #9C27B0;
-        font-size: 1.1rem;
+        font-size: 1.2rem;
+        color: #865D92;
         margin-bottom: 2rem;
-        font-weight: 500;
     }
+
+    .upload-box {
+        background: #FFFFFF90;
+        border: 3px dashed #D988B9;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(176, 87, 141, 0.1);
+    }
+
+    .result-box {
+        background: rgba(255,255,255,0.7);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 1.5rem;
+        border: 2px solid #F5C6EC;
+        box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+    }
+
     .stButton>button {
-        background: linear-gradient(135deg, #F48FB1, #EC407A);
+        background: linear-gradient(135deg, #B0578D, #D988B9);
         color: white;
-        border: none;
         border-radius: 12px;
+        border: none;
         padding: 0.8rem 2rem;
         font-size: 1.1rem;
         font-weight: 600;
-        transition: all 0.3s ease;
         width: 100%;
+        transition: all 0.3s ease;
     }
+
     .stButton>button:hover {
-        transform: translateY(-2px);
-        background: linear-gradient(135deg, #F06292, #E91E63);
+        transform: translateY(-3px);
+        background: linear-gradient(135deg, #D988B9, #B0578D);
     }
-    .text-box {
-        background-color: #FFF0F5;
-        border: 2px solid #F8BBD0;
-        border-radius: 12px;
-        padding: 1rem;
-        color: #6A1B9A;
-        font-size: 1rem;
-        font-weight: 500;
-    }
+
     .audio-box {
-        background: #FCE4EC;
-        border: 2px solid #F48FB1;
-        border-radius: 16px;
-        padding: 1rem;
         text-align: center;
-        color: #AD1457;
+        background: #FFF4F9;
+        border-radius: 20px;
+        padding: 1rem;
         margin-top: 1rem;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# ==============================
-# FUNCIÓN AUXILIAR
-# ==============================
-def remove_files(n):
-    mp3_files = glob.glob("temp/*mp3")
-    if len(mp3_files) != 0:
-        now = time.time()
-        n_days = n * 86400
-        for f in mp3_files:
-            if os.stat(f).st_mtime < now - n_days:
-                os.remove(f)
+# ============================
+# 🧸 CABECERA
+# ============================
+st.markdown('<h1 class="main-header">Lectura Mágica para Bebés</h1>', unsafe_allow_html=True)
+st.markdown('<div class="sub">Sube o captura una palabra y escucha una dulce historia narrada 💤</div>', unsafe_allow_html=True)
 
-try:
-    os.mkdir("temp")
-except:
-    pass
-
-remove_files(7)
-
-# ==============================
-# CABECERA
-# ==============================
-st.markdown('<div class="main-title">🧸 Baby Story Reader</div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Convierte textos en dulces cuentos narrados para tu bebé 💕</div>', unsafe_allow_html=True)
-
-# ==============================
-# FUENTE DE IMAGEN
-# ==============================
-st.markdown("### 📸 Captura o carga una imagen con texto")
-source = st.radio("Selecciona una fuente:", ["Usar cámara", "Cargar imagen"], horizontal=True)
-
-img_data = None
-if source == "Usar cámara":
-    img_file = st.camera_input("Toma una foto del texto")
-    if img_file:
-        img_data = np.frombuffer(img_file.getvalue(), np.uint8)
-else:
-    img_file = st.file_uploader("Carga una imagen (png, jpg, jpeg)", type=["png", "jpg", "jpeg"])
-    if img_file:
-        img_data = np.frombuffer(img_file.read(), np.uint8)
-
-# ==============================
-# DETECCIÓN DE TEXTO
-# ==============================
+# ============================
+# 📸 CARGA DE IMAGEN
+# ============================
+col1, col2 = st.columns([2, 1])
 text = ""
-if img_data is not None:
-    img = cv2.imdecode(img_data, cv2.IMREAD_COLOR)
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    text = pytesseract.image_to_string(gray)
-    if text.strip():
-        st.markdown("### 📝 Texto Detectado")
-        st.markdown(f'<div class="text-box">{text}</div>', unsafe_allow_html=True)
+
+with col1:
+    st.markdown('<div class="upload-box">📷 <br><strong>Sube una imagen o usa la cámara</strong></div>', unsafe_allow_html=True)
+    cam_option = st.radio("Selecciona la fuente", ["📸 Cámara", "📂 Subir imagen"], horizontal=True)
+
+    if cam_option == "📸 Cámara":
+        img_file_buffer = st.camera_input("Toma una foto del texto o dibujo del bebé")
+        filtro = st.radio("¿Aplicar filtro para mejorar lectura?", ["Sí", "No"], horizontal=True)
     else:
-        st.warning("No se detectó texto, intenta con otra imagen.")
+        img_file_buffer = None
+        uploaded_file = st.file_uploader("Sube una imagen (JPG, PNG)", type=["jpg", "jpeg", "png"])
+        filtro = "No"
 
-# ==============================
-# OPCIONES DE VOZ Y TRADUCCIÓN
-# ==============================
+# ============================
+# 🧠 PROCESAMIENTO OCR
+# ============================
+with col2:
+    if cam_option == "📸 Cámara" and img_file_buffer:
+        bytes_data = img_file_buffer.getvalue()
+        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+        if filtro == "Sí":
+            cv2_img = cv2.bitwise_not(cv2_img)
+        img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+        text = pytesseract.image_to_string(img_rgb)
+
+    elif cam_option == "📂 Subir imagen" and uploaded_file:
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Imagen cargada", use_container_width=True)
+        cv2_img = np.array(image)
+        img_rgb = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+        text = pytesseract.image_to_string(img_rgb)
+
+# ============================
+# 💬 TRADUCCIÓN Y AUDIO
+# ============================
 if text.strip():
-    st.markdown("### 🌍 Selecciona idioma y estilo de voz")
-    col1, col2 = st.columns(2)
+    st.markdown('<div class="result-box">', unsafe_allow_html=True)
+    st.subheader("✨ Palabra Detectada")
+    st.write(f"**{text.strip()}**")
 
-    with col1:
-        out_lang = st.selectbox(
-            "Idioma para el cuento:",
-            ("Español", "Inglés", "Francés", "Portugués", "Italiano"),
-        )
+    # Traducir texto
+    translated = GoogleTranslator(source='auto', target='es').translate(text)
+    story_prompt = f"Cuenta una historia breve y tierna para bebés inspirada en la palabra: {translated}"
+    
+    st.subheader("🧚 Historia mágica")
+    story = f"Había una vez un pequeño {translated} que vivía en un bosque lleno de colores. Cada mañana saludaba al sol y jugaba con las mariposas hasta quedarse dormido bajo un arcoíris. 🌈✨"
+    st.write(story)
 
-    with col2:
-        estilo = st.selectbox(
-            "Estilo del cuento:",
-            ("Tierno y calmado 🧸", "Aventurero 🚀", "Para dormir 🌙"),
-        )
+    # Generar audio
+    tts = gTTS(story, lang='es')
+    os.makedirs("temp", exist_ok=True)
+    audio_path = "temp/story.mp3"
+    tts.save(audio_path)
 
-    # Diccionario de idiomas
-    lang_map = {
-        "Español": "es",
-        "Inglés": "en",
-        "Francés": "fr",
-        "Portugués": "pt",
-        "Italiano": "it"
-    }
-    lg = lang_map[out_lang]
-
-    # Botón principal
-    if st.button("🎧 Convertir en Cuento"):
-        with st.spinner("Generando el cuento y la voz mágica... ✨"):
-            # Traducción del texto
-            try:
-                story_text = GoogleTranslator(source="auto", target=lg).translate(text)
-            except Exception as e:
-                st.error(f"Error al traducir: {e}")
-                story_text = text
-
-            # Personalizar estilo
-            if estilo == "Tierno y calmado 🧸":
-                story_text = f"💤 Había una vez un pequeño osito que aprendía palabras nuevas. {story_text} 🌼"
-            elif estilo == "Aventurero 🚀":
-                story_text = f"🚀 En un bosque lleno de estrellas, comenzó una gran aventura: {story_text}"
-            else:
-                story_text = f"🌙 En un mundo de sueños suaves, este cuento te arrullará: {story_text}"
-
-            # Generar voz
-            tts = gTTS(story_text, lang=lg)
-            filename = "temp/baby_story.mp3"
-            tts.save(filename)
-
-            # Mostrar resultado
-            st.markdown("### 🎵 Audio del Cuento")
-            audio_file = open(filename, "rb")
-            audio_bytes = audio_file.read()
-            st.audio(audio_bytes, format="audio/mp3")
-            st.markdown(f'<div class="audio-box">{story_text}</div>', unsafe_allow_html=True)
+    # Mostrar audio
+    st.markdown('<div class="audio-box">', unsafe_allow_html=True)
+    st.audio(audio_path, format="audio/mp3")
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.info("💡 Captura o sube una imagen con texto para crear un cuento de bebé.")
+    st.info("💡 Toma una foto o sube una imagen para comenzar la historia mágica 🎨")
+
+# ============================
+# 🧼 LIMPIAR ARCHIVOS VIEJOS
+# ============================
+def remove_old_audios(days=3):
+    now = time.time()
+    for f in glob.glob("temp/*.mp3"):
+        if os.stat(f).st_mtime < now - days * 86400:
+            os.remove(f)
+
+remove_old_audios()
+
 
